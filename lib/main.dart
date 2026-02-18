@@ -22,6 +22,13 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     if (happinessLevel >= 30) return Colors.yellow;
     return Colors.red;
   }
+
+  // pet mood indicator
+  String _moodText() {
+  if (happinessLevel > 70) return "Happy 😄";
+  if (happinessLevel >= 30) return "Neutral 😐";
+  return "Unhappy 😢";
+  }
   void _playWithPet() {
     setState(() {
       happinessLevel += 10;
@@ -78,8 +85,10 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
                 height: 150,
               ),
             ),
-
             SizedBox(height: 8.0),
+            // mood indicator
+            Text(_moodText(), style: TextStyle(fontSize: 24.0)),
+            SizedBox(height: 16.0),
             Text('Happiness Level: $happinessLevel', style: TextStyle(fontSize: 20.0)),
             SizedBox(height: 16.0),
             Text('Hunger Level: $hungerLevel', style: TextStyle(fontSize: 20.0)),

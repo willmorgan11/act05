@@ -15,6 +15,14 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   String petName = "Your Pet";
   int happinessLevel = 50;
   int hungerLevel = 50;
+  // name input controller
+  final TextEditingController _nameController = TextEditingController();
+  // cancel timers and dispose controllers
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   // dynamic pet color change
   Color _moodColor() {
@@ -61,6 +69,16 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     });
   }
 
+  // pet name customization
+  void _setPetName() {
+    if (_nameController.text.trim().isNotEmpty) {
+      setState(() {
+        petName = _nameController.text.trim();
+        _nameController.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +89,23 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // custom pet name
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40.0),
+              child: TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Enter pet name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SizedBox(height: 8.0),
+            ElevatedButton(
+              onPressed: _setPetName,
+              child: Text('Set Name'),
+            ),
+            SizedBox(height: 8.0),
             Text('Name: $petName', style: TextStyle(fontSize: 20.0)),
             SizedBox(height: 16.0),
             // color filter for pet image

@@ -19,7 +19,11 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   // name input controller
   final TextEditingController _nameController = TextEditingController();
   // timers
-  Timer? _hungerTimer;       // auto-increases hunger every 30 seconds
+  Timer? _hungerTimer;    // auto-increases hunger every 30 seconds
+  Timer? _winTimer;       // tracks how long happiness > 80
+  int _happySeconds = 0;
+  bool _gameOver = false;
+  bool _gameWon = false;
   // hunger timer
   @override
   void initState() {
@@ -29,11 +33,29 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
         hungerLevel = (hungerLevel + 10).clamp(0, 100);
       });
     });
+    // win timer
+    _winTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (!_gameOver && !_gameWon) {
+        setState(() {
+          if (happinessLevel > 80) {
+            _happySeconds++;
+            if (_happySeconds >= 180) { // 3 minutes = 180 seconds for win
+              _gameWon = true;
+              _winTimer?.cancel();
+              _hungerTimer?.cancel();
+            }
+          } else {
+            _happySeconds = 0; // reset if happiness drops below 80
+          }
+        });
+      }
+    });
   }
   // cancel timers and dispose controllers
   @override
   void dispose() {
     _hungerTimer?.cancel();
+    _winTimer?.cancel();
     _nameController.dispose();
     super.dispose();
   }
@@ -51,36 +73,44 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   if (happinessLevel >= 30) return "Neutral 😐";
   return "Unhappy 😢";
   }
+
+  // win/loss
+  void _checkConditions() {
+    if (hungerLevel >= 100 && happinessLevel <= 10) {
+      _gameOver = true;
+      _hungerTimer?.cancel();
+      _winTimer?.cancel();
+    }
+  }
   void _playWithPet() {
     setState(() {
-      happinessLevel += 10;
+      happinessLevel = (happinessLevel + 10).clamp(0, 100);
       _updateHunger();
+      _checkConditions();
     });
   }
 
   void _feedPet() {
     setState(() {
-      hungerLevel -= 10;
+      hungerLevel = (hungerLevel - 10).clamp(0, 100);
       _updateHappiness();
+      _checkConditions();
     });
   }
 
   void _updateHappiness() {
     if (hungerLevel < 30) {
-      happinessLevel -= 20;
+      happinessLevel = (happinessLevel - 20).clamp(0, 100);
     } else {
-      happinessLevel += 10;
+      happinessLevel = (happinessLevel + 10).clamp(0, 100);
     }
   }
 
   void _updateHunger() {
-    setState(() {
-      hungerLevel += 5;
-      if (hungerLevel > 100) {
-        hungerLevel = 100;
-        happinessLevel -= 20;
-      }
-    });
+    hungerLevel = (hungerLevel + 5).clamp(0, 100);
+    if (hungerLevel >= 100) {
+      happinessLevel = (happinessLevel - 20).clamp(0, 100);
+    }
   }
 
   // pet name customization
@@ -103,6 +133,19 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // win / loss text
+                        if (_gameWon)
+              Text('🏆 YOU WIN! Your pet is thriving!',
+              style: TextStyle(
+                fontSize: 22,
+                color: Colors.green, 
+                fontWeight: FontWeight.bold)),
+            if (_gameOver)
+              Text('💀 GAME OVER! Your pet is too hungry!',
+              style: TextStyle(
+                fontSize: 22, 
+                color: Colors.red, 
+                fontWeight: FontWeight.bold)),
             // custom pet name
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -114,12 +157,12 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
                 ),
               ),
             ),
-            SizedBox(height: 8.0),
+            SizedBox(height: 4.0),
             ElevatedButton(
               onPressed: _setPetName,
               child: Text('Set Name'),
             ),
-            SizedBox(height: 8.0),
+            SizedBox(height: 4.0),
             Text('Name: $petName', style: TextStyle(fontSize: 20.0)),
             SizedBox(height: 16.0),
             // color filter for pet image
@@ -130,8 +173,8 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
               ),
               child: Image.asset(
                 'assets/image2.png',
-                width: 150,
-                height: 150,
+                width: 250,
+                height: 250,
               ),
             ),
             SizedBox(height: 8.0),

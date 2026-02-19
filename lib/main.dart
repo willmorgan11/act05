@@ -16,6 +16,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   String petName = "Your Pet";
   int happinessLevel = 50;
   int hungerLevel = 50;
+  int energyLevel = 100;
   // name input controller
   final TextEditingController _nameController = TextEditingController();
   // timers
@@ -85,6 +86,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   void _playWithPet() {
     setState(() {
       happinessLevel = (happinessLevel + 10).clamp(0, 100);
+      energyLevel = (energyLevel - 10).clamp(0, 100); // playing uses energy
       _updateHunger();
       _checkConditions();
     });
@@ -93,6 +95,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   void _feedPet() {
     setState(() {
       hungerLevel = (hungerLevel - 10).clamp(0, 100);
+      energyLevel = (energyLevel + 5).clamp(0, 100); // eating restores a little energy
       _updateHappiness();
       _checkConditions();
     });
@@ -148,7 +151,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
                 fontWeight: FontWeight.bold)),
             // custom pet name
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.0),
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -173,8 +176,8 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
               ),
               child: Image.asset(
                 'assets/image2.png',
-                width: 250,
-                height: 250,
+                width: 200,
+                height: 200,
               ),
             ),
             SizedBox(height: 8.0),
@@ -184,7 +187,23 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
             Text('Happiness Level: $happinessLevel', style: TextStyle(fontSize: 20.0)),
             SizedBox(height: 16.0),
             Text('Hunger Level: $hungerLevel', style: TextStyle(fontSize: 20.0)),
-            SizedBox(height: 32.0),
+            SizedBox(height: 16.0),
+            Text('Energy Level: $energyLevel', style: TextStyle(fontSize: 20.0)),
+            SizedBox(height: 8.0),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40.0),
+              child: LinearProgressIndicator(
+                value: energyLevel / 100,   // must be between 0.0 and 1.0
+                minHeight: 16,
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  energyLevel > 60 ? Colors.blue :
+                  energyLevel > 30 ? Colors.orange :
+                  Colors.red,
+                ),
+              ),
+            ),
+            SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: _playWithPet,
               child: Text('Play with Your Pet'),
